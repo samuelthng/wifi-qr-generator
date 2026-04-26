@@ -61,7 +61,8 @@ export function QRGenerator() {
 		// If ?q= is present, useCompressedParams handles logo restoration asynchronously.
 		// startTransition defers this non-urgent external-store sync.
 		// eslint-disable-next-line react-hooks/set-state-in-effect
-		if (!new URLSearchParams(window.location.search).has('q')) {
+		const searchParams = new URLSearchParams(window.location.search);
+		if (!searchParams.has('q')) {
 			try {
 				const stored = localStorage.getItem(LOGO_STORAGE_KEY);
 				if (stored) startTransition(() => setLogo(stored));

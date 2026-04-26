@@ -81,8 +81,7 @@ export function useCompressedParams(onLogoLoad: (logo: string) => void): {
 
 		if (!params.q) return;
 
-		const q = params.q;
-		decodeState(q).then((state) => {
+		decodeState(params.q).then((state) => {
 			// Build a partial update: reset `q` to null (removes it from the URL)
 			// and apply every field that was present in the encoded payload.
 			const updates: ParamUpdate = { q: null };

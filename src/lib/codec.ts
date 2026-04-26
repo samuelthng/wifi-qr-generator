@@ -27,8 +27,8 @@ export interface QRState {
 
 /**
  * Maximum number of base64url characters allowed for the entire `q` param value.
- * Keeps URLs within a reasonable length (≈ 6 KB decoded) while still fitting
- * small SVG/icon logos.
+ * Approximately 6 KB when decoded (8,192 base64url characters ≈ 6,144 bytes compressed).
+ * Keeps URLs within a reasonable length while still fitting small SVG/icon logos.
  */
 export const MAX_SHARE_URL_PAYLOAD = 8_192;
 
@@ -95,7 +95,9 @@ export async function decodeState(q: string): Promise<Partial<QRState>> {
 		const bytes = base64UrlToBytes(q);
 		const stream = new DecompressionStream('deflate-raw');
 		const writer = stream.writable.getWriter();
-		// Cast to Uint8Array<ArrayBuffer> — base64UrlToBytes always produces one.
+		// Cast required because `base64UrlToBytes` returns `Uint8Array<ArrayBufferLike>`
+		// (TypeScript widens the buffer type), but the stream writer expects `Uint8Array<ArrayBuffer>`.
+		// The function always allocates a plain ArrayBuffer, so the cast is safe.
 		writer.write(bytes as unknown as Uint8Array<ArrayBuffer>);
 		writer.close();
 		const decompressed = await readStream(stream.readable);
