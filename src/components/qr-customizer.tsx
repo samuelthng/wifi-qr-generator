@@ -19,6 +19,7 @@ export function QRCustomizer({ logo, onLogoChange }: QRCustomizerProps) {
 			fgColor: qrParsers.fgColor,
 			bgColor: qrParsers.bgColor,
 			size: qrParsers.size,
+			logoOpaque: qrParsers.logoOpaque,
 		},
 		{ shallow: false }
 	);
@@ -200,6 +201,17 @@ export function QRCustomizer({ logo, onLogoChange }: QRCustomizerProps) {
 						</button>
 					)}
 				</div>
+				{logo && (
+					<label className="mt-2 flex items-center gap-2 cursor-pointer">
+						<input
+							type="checkbox"
+							checked={params.logoOpaque}
+							onChange={(e) => setParams({ logoOpaque: e.target.checked })}
+							className="rounded border-zinc-300 text-blue-600 focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800"
+						/>
+						<span className="text-xs text-zinc-600 dark:text-zinc-400">Hide dots under logo</span>
+					</label>
+				)}
 				{logo && (
 					<p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
 						Use error correction Q or H with logos for reliable scanning.

@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { useQueryStates } from 'nuqs';
 import { qrParsers } from '@/lib/params';
 import { buildWifiString } from '@/lib/wifi';
-import { createQRCode, updateQRCode, type QRInstance } from '@/lib/qr';
+import { createQRCode, updateQRCode, addContourStroke, type QRInstance } from '@/lib/qr';
 import type { CornerDotType, CornerSquareType, DotType } from 'qr-code-styling';
 
 interface QRPreviewProps {
@@ -15,6 +15,7 @@ interface QRPreviewProps {
 export function QRPreview({ logo, qrRef }: QRPreviewProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
+	const [processedLogo, setProcessedLogo] = useState<string | null>(null);
 
 	const [params] = useQueryStates(
 		{
@@ -29,9 +30,27 @@ export function QRPreview({ logo, qrRef }: QRPreviewProps) {
 			fgColor: qrParsers.fgColor,
 			bgColor: qrParsers.bgColor,
 			size: qrParsers.size,
+			logoOpaque: qrParsers.logoOpaque,
 		},
 		{ shallow: false }
 	);
+
+	// Pre-process logo with contour stroke when dots show through
+	useEffect(() => {
+		if (!logo || params.logoOpaque) {
+			setProcessedLogo(null);
+			return;
+		}
+		let cancelled = false;
+		addContourStroke(logo, 4, params.bgColor).then((result) => {
+			if (!cancelled) setProcessedLogo(result);
+		});
+		return () => {
+			cancelled = true;
+		};
+	}, [logo, params.logoOpaque, params.bgColor]);
+
+	const effectiveLogo = params.logoOpaque ? logo : (processedLogo ?? logo);
 
 	const getQROptions = useCallback(() => {
 		const data = params.ssid
@@ -48,7 +67,7 @@ export function QRPreview({ logo, qrRef }: QRPreviewProps) {
 			width: params.size,
 			height: params.size,
 			type: 'svg' as const,
-			margin: 16,
+			margin: 8,
 			dotsOptions: {
 				type: params.dotStyle as DotType,
 				color: params.fgColor,
@@ -75,10 +94,11 @@ export function QRPreview({ logo, qrRef }: QRPreviewProps) {
 				crossOrigin: 'anonymous' as const,
 				margin: 8,
 				imageSize: 0.35,
+				hideBackgroundDots: params.logoOpaque,
 			},
-			...(logo ? { image: logo } : { image: undefined }),
+			...(effectiveLogo ? { image: effectiveLogo } : { image: undefined }),
 		};
-	}, [params, logo]);
+	}, [params, effectiveLogo]);
 
 	// Initialize QR code
 	useEffect(() => {

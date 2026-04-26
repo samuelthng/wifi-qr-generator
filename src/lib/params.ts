@@ -32,6 +32,7 @@ export const qrParsers = {
 	fgColor: parseAsString.withDefault(DEFAULTS.fgColor),
 	bgColor: parseAsString.withDefault(DEFAULTS.bgColor),
 	size: parseAsInteger.withDefault(DEFAULTS.size),
+	logoOpaque: parseAsBoolean.withDefault(true),
 
 	// Label
 	label: parseAsString.withDefault(''),
