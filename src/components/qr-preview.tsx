@@ -31,6 +31,7 @@ export function QRPreview({ logo, qrRef }: QRPreviewProps) {
 			bgColor: qrParsers.bgColor,
 			size: qrParsers.size,
 			logoOpaque: qrParsers.logoOpaque,
+			logoStrokeWidth: qrParsers.logoStrokeWidth,
 		},
 		{ shallow: false }
 	);
@@ -42,13 +43,13 @@ export function QRPreview({ logo, qrRef }: QRPreviewProps) {
 			return;
 		}
 		let cancelled = false;
-		addContourStroke(logo, 4, params.bgColor).then((result) => {
+		addContourStroke(logo, params.logoStrokeWidth, params.bgColor).then((result) => {
 			if (!cancelled) setProcessedLogo(result);
 		});
 		return () => {
 			cancelled = true;
 		};
-	}, [logo, params.logoOpaque, params.bgColor]);
+	}, [logo, params.logoOpaque, params.bgColor, params.logoStrokeWidth]);
 
 	const effectiveLogo = params.logoOpaque ? logo : (processedLogo ?? logo);
 

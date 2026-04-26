@@ -23,25 +23,30 @@ function PrintCardInfo({
 	printPassword: boolean;
 	compact?: boolean;
 }) {
-	const iconSize = compact ? '14' : '20';
+	const iconSize = compact ? '13' : '18';
+	const labelColWidth = compact ? '11mm' : '16mm';
 
 	return (
 		<div
 			style={{
-				marginTop: compact ? '1.5mm' : '4mm',
-				textAlign: 'center',
-				color: '#222',
+				marginTop: compact ? '2mm' : '4mm',
 				width: '100%',
+				backgroundColor: '#f8f9fa',
+				border: '0.5px solid #e4e4e4',
+				borderRadius: compact ? '2mm' : '3mm',
+				padding: compact ? '2mm 3mm' : '4mm 6mm',
+				boxSizing: 'border-box',
+				textAlign: 'center',
 			}}
 		>
-			{/* "Scan to connect" header with WiFi icon */}
+			{/* "Scan to connect" header with WiFi icon — vertically centered */}
 			<div
 				style={{
 					display: 'flex',
 					alignItems: 'center',
 					justifyContent: 'center',
-					gap: compact ? '1mm' : '2mm',
-					marginBottom: compact ? '1mm' : '3mm',
+					gap: compact ? '1.5mm' : '2mm',
+					marginBottom: compact ? '1.5mm' : '3mm',
 				}}
 			>
 				<svg
@@ -49,78 +54,80 @@ function PrintCardInfo({
 					height={iconSize}
 					viewBox="0 0 24 20"
 					fill="none"
-					stroke="#555"
+					stroke="#666"
 					strokeWidth="2"
 					strokeLinecap="round"
 					strokeLinejoin="round"
-					style={{ flexShrink: 0 }}
+					style={{ flexShrink: 0, display: 'block' }}
 				>
 					<path d="M1.42 5a16 16 0 0 1 21.16 0" />
 					<path d="M5 8.55a11 11 0 0 1 14.08 0" />
 					<path d="M8.53 12.11a6 6 0 0 1 6.95 0" />
-					<circle cx="12" cy="16" r="1" fill="#555" />
+					<circle cx="12" cy="16" r="1" fill="#666" />
 				</svg>
 				<span
 					style={{
-						fontSize: compact ? '7pt' : '9pt',
+						fontSize: compact ? '6.5pt' : '8.5pt',
 						fontWeight: 600,
 						textTransform: 'uppercase',
-						letterSpacing: '0.08em',
+						letterSpacing: '0.1em',
 						color: '#666',
+						lineHeight: 1,
 					}}
 				>
 					Scan to connect
 				</span>
 			</div>
 
+			{/* Divider between header and card body */}
+			<div
+				style={{
+					width: '100%',
+					height: '0.5px',
+					background: '#e0e0e0',
+					marginBottom: compact ? '1.5mm' : '3mm',
+				}}
+			/>
+
 			{/* Label (custom name like "Guest WiFi") */}
 			{label && (
 				<p
 					style={{
-						fontSize: compact ? '10pt' : '14pt',
+						fontSize: compact ? '9.5pt' : '13pt',
 						fontWeight: 700,
-						margin: `0 0 ${compact ? '0.5mm' : '1.5mm'}`,
+						margin: `0 0 ${compact ? '1mm' : '2mm'}`,
 						color: '#111',
+						lineHeight: 1.2,
 					}}
 				>
 					{label}
 				</p>
 			)}
 
-			{/* Divider line */}
-			<div
-				style={{
-					width: compact ? '20mm' : '40mm',
-					height: '0.5px',
-					background: '#ddd',
-					margin: `${compact ? '1mm' : '2mm'} auto`,
-				}}
-			/>
-
-			{/* Network details in a structured layout */}
+			{/* Network details in a structured key/value layout */}
 			<div
 				style={{
 					display: 'inline-block',
 					textAlign: 'left',
-					fontSize: compact ? '7pt' : '9.5pt',
-					lineHeight: 1.6,
+					fontSize: compact ? '6.5pt' : '9pt',
+					lineHeight: 1.7,
 					color: '#444',
 				}}
 			>
-				<div style={{ display: 'flex', gap: compact ? '1.5mm' : '3mm' }}>
-					<span style={{ color: '#999', fontWeight: 500 }}>Network</span>
-					<span style={{ fontWeight: 600, color: '#222' }}>{ssid}</span>
+				<div style={{ display: 'flex', gap: compact ? '1.5mm' : '3mm', alignItems: 'baseline' }}>
+					<span style={{ color: '#888', fontWeight: 500, minWidth: labelColWidth, flexShrink: 0 }}>Network</span>
+					<span style={{ fontWeight: 600, color: '#111' }}>{ssid}</span>
 				</div>
 				{!compact && (
-					<div style={{ display: 'flex', gap: '3mm' }}>
-						<span style={{ color: '#999', fontWeight: 500 }}>Security</span>
-						<span>{encLabel}</span>
+					<div style={{ display: 'flex', gap: '3mm', alignItems: 'baseline' }}>
+						<span style={{ color: '#888', fontWeight: 500, minWidth: labelColWidth, flexShrink: 0 }}>Security</span>
+						<span style={{ color: '#333' }}>{encLabel}</span>
 					</div>
 				)}
 				{printPassword && password && (
-					<div style={{ display: 'flex', gap: compact ? '1.5mm' : '3mm' }}>
-						<span style={{ color: '#999', fontWeight: 500 }}>Password</span>
-						<span style={{ fontFamily: 'monospace', letterSpacing: '0.03em' }}>{password}</span>
+					<div style={{ display: 'flex', gap: compact ? '1.5mm' : '3mm', alignItems: 'baseline' }}>
+						<span style={{ color: '#888', fontWeight: 500, minWidth: labelColWidth, flexShrink: 0 }}>Password</span>
+						<span style={{ fontFamily: 'monospace', letterSpacing: '0.05em', color: '#111' }}>{password}</span>
 					</div>
 				)}
 			</div>

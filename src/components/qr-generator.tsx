@@ -23,6 +23,16 @@ export function QRGenerator() {
 		{
 			ssid: qrParsers.ssid,
 			label: qrParsers.label,
+			// Include all QR styling params so print image updates when any of them change
+			ecLevel: qrParsers.ecLevel,
+			dotStyle: qrParsers.dotStyle,
+			cornerSquareStyle: qrParsers.cornerSquareStyle,
+			cornerDotStyle: qrParsers.cornerDotStyle,
+			fgColor: qrParsers.fgColor,
+			bgColor: qrParsers.bgColor,
+			size: qrParsers.size,
+			logoOpaque: qrParsers.logoOpaque,
+			logoStrokeWidth: qrParsers.logoStrokeWidth,
 		},
 		{ shallow: false }
 	);
@@ -64,7 +74,7 @@ export function QRGenerator() {
 	// Also update print image on param/logo changes (after QR update settles)
 	useEffect(() => {
 		if (!mounted || !qrRef.current) return;
-		const timer = setTimeout(updatePrintImage, 400);
+		const timer = setTimeout(updatePrintImage, 800);
 		return () => clearTimeout(timer);
 	}, [params, logo, mounted, updatePrintImage]);
 
