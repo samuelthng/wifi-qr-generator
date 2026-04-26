@@ -5,7 +5,11 @@ import { qrParsers } from '@/lib/params';
 import { PRINT_LAYOUTS, ENCRYPTION_TYPES } from '@/lib/constants';
 import { QRLabelDisplay } from './qr-label';
 
-export function PrintView() {
+interface PrintViewProps {
+	qrImageUrl: string;
+}
+
+export function PrintView({ qrImageUrl }: PrintViewProps) {
 	const [params] = useQueryStates(
 		{
 			ssid: qrParsers.ssid,
@@ -23,19 +27,10 @@ export function PrintView() {
 	const copies = layout.cols * layout.rows;
 
 	return (
-		<div
-			className="hidden print:block"
-			style={{
-				display: 'var(--print-display, none)',
-			}}
-		>
+		<div className="hidden print:block">
 			<style>{`
         @media print {
           @page { size: auto; margin: 1cm; }
-          body > *:not(.print-root) { display: none !important; }
-          .print-root { display: block !important; }
-          .print-root .no-print { display: none !important; }
-        }
       `}</style>
 
 			<div
@@ -57,8 +52,9 @@ export function PrintView() {
 							pageBreakInside: 'avoid',
 						}}
 					>
-						{/* QR code gets cloned here via JS in qr-generator */}
-						<div className="print-qr-slot" data-slot={i} />
+						{qrImageUrl && (
+							<img src={qrImageUrl} alt="WiFi QR Code" style={{ width: '100%', maxWidth: '250px', height: 'auto' }} />
+						)}
 
 						<QRLabelDisplay label={params.label} />
 

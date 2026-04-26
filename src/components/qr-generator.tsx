@@ -4,6 +4,7 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import { useQueryStates } from 'nuqs';
 import { qrParsers } from '@/lib/params';
 import type { QRInstance } from '@/lib/qr';
+import { getRawData } from '@/lib/qr';
 import { WifiForm } from './wifi-form';
 import { QRCustomizer } from './qr-customizer';
 import { QRPreview } from './qr-preview';
@@ -16,6 +17,7 @@ export function QRGenerator() {
 	const qrRef = useRef<QRInstance | null>(null);
 	const [logo, setLogo] = useState<string | null>(null);
 	const [mounted, setMounted] = useState(false);
+	const [printDataUrl, setPrintDataUrl] = useState('');
 
 	const [params] = useQueryStates(
 		{
@@ -29,29 +31,42 @@ export function QRGenerator() {
 		setMounted(true);
 	}, []);
 
-	// Clone QR SVG into print slots before printing
-	const handleBeforePrint = useCallback(() => {
-		const slots = document.querySelectorAll('.print-qr-slot');
-		const qrContainer = document.querySelector('[data-qr-container]');
-		if (!qrContainer) return;
+	// Generate a data URL from the QR instance for print use
+	const updatePrintImage = useCallback(async () => {
+		const instance = qrRef.current;
+		if (!instance) return;
 
-		const svg = qrContainer.querySelector('svg');
-		if (!svg) return;
+		const blob = await getRawData(instance, 'svg');
+		if (!blob) return;
 
-		slots.forEach((slot) => {
-			slot.innerHTML = '';
-			const clone = svg.cloneNode(true) as SVGElement;
-			clone.style.width = '100%';
-			clone.style.height = 'auto';
-			clone.style.maxWidth = '250px';
-			slot.appendChild(clone);
+		const url = URL.createObjectURL(blob);
+		setPrintDataUrl((prev) => {
+			if (prev) URL.revokeObjectURL(prev);
+			return url;
 		});
 	}, []);
 
+	// Re-generate print image whenever QR container changes
 	useEffect(() => {
-		window.addEventListener('beforeprint', handleBeforePrint);
-		return () => window.removeEventListener('beforeprint', handleBeforePrint);
-	}, [handleBeforePrint]);
+		if (!mounted) return;
+
+		// Poll briefly for QR instance to be ready, then observe for changes
+		const interval = setInterval(() => {
+			if (qrRef.current) {
+				clearInterval(interval);
+				updatePrintImage();
+			}
+		}, 200);
+
+		return () => clearInterval(interval);
+	}, [mounted, updatePrintImage]);
+
+	// Also update print image on param/logo changes (after QR update settles)
+	useEffect(() => {
+		if (!mounted || !qrRef.current) return;
+		const timer = setTimeout(updatePrintImage, 400);
+		return () => clearTimeout(timer);
+	}, [params, logo, mounted, updatePrintImage]);
 
 	if (!mounted) {
 		return (
@@ -95,7 +110,7 @@ export function QRGenerator() {
 
 			{/* Print-only view */}
 			<div className="print-root">
-				<PrintView />
+				<PrintView qrImageUrl={printDataUrl} />
 			</div>
 		</>
 	);
