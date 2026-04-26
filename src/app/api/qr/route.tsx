@@ -3,7 +3,6 @@ import { renderSVG } from 'uqr';
 import { buildWifiString, escapeWifiValue } from '@/lib/wifi';
 import type { NextRequest } from 'next/server';
 
-export const runtime = 'edge';
 
 const EC_LEVELS = ['L', 'M', 'Q', 'H'] as const;
 type ECLevel = (typeof EC_LEVELS)[number];
