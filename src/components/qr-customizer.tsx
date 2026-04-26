@@ -20,6 +20,7 @@ export function QRCustomizer({ logo, onLogoChange }: QRCustomizerProps) {
 			bgColor: qrParsers.bgColor,
 			size: qrParsers.size,
 			logoOpaque: qrParsers.logoOpaque,
+			logoStrokeWidth: qrParsers.logoStrokeWidth,
 		},
 		{ shallow: false }
 	);
@@ -211,6 +212,22 @@ export function QRCustomizer({ logo, onLogoChange }: QRCustomizerProps) {
 						/>
 						<span className="text-xs text-zinc-600 dark:text-zinc-400">Hide dots under logo</span>
 					</label>
+				)}
+				{logo && !params.logoOpaque && (
+					<div className="mt-2">
+						<label className="block text-xs text-zinc-600 dark:text-zinc-400 mb-1">
+							Logo stroke width: {params.logoStrokeWidth}px
+						</label>
+						<input
+							type="range"
+							min={1}
+							max={20}
+							step={1}
+							value={params.logoStrokeWidth}
+							onChange={(e) => setParams({ logoStrokeWidth: Number(e.target.value) })}
+							className="w-full accent-blue-600"
+						/>
+					</div>
 				)}
 				{logo && (
 					<p className="mt-1 text-xs text-amber-600 dark:text-amber-400">

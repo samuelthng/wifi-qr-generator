@@ -57,4 +57,5 @@ export const DEFAULTS = {
 	size: 300,
 	encryptionType: 'WPA' as EncryptionType,
 	printLayout: '1' as PrintLayout,
+	logoStrokeWidth: 8,
 } as const;
