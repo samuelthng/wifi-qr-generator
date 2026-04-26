@@ -37,6 +37,7 @@ export const PRINT_LAYOUTS = [
 	{ value: '1', label: '1 per page', cols: 1, rows: 1 },
 	{ value: '2x2', label: '2×2 Grid', cols: 2, rows: 2 },
 	{ value: '3x3', label: '3×3 Grid', cols: 3, rows: 3 },
+	{ value: 'type86', label: 'Type 86 Cutout', cols: 2, rows: 3 },
 ] as const;
 
 export type DotStyle = (typeof DOT_STYLES)[number]['value'];
