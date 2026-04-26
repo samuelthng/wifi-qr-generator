@@ -41,19 +41,25 @@ export function QRGenerator() {
 		setMounted(true);
 	}, []);
 
-	// Generate a data URL from the QR instance for print use
+	// Generate a high-res PNG data URL from the QR instance for print use.
+	// SVG blob URLs render correctly on screen but many printer drivers fail
+	// to rasterize them, producing a solid black block. A PNG avoids this.
 	const updatePrintImage = useCallback(async () => {
 		const instance = qrRef.current;
 		if (!instance) return;
 
-		const blob = await getRawData(instance, 'svg');
+		const blob = await getRawData(instance, 'png');
 		if (!blob) return;
 
-		const url = URL.createObjectURL(blob);
-		setPrintDataUrl((prev) => {
-			if (prev) URL.revokeObjectURL(prev);
-			return url;
-		});
+		const reader = new FileReader();
+		reader.onloadend = () => {
+			const dataUrl = reader.result as string;
+			setPrintDataUrl((prev) => {
+				if (prev && prev.startsWith('blob:')) URL.revokeObjectURL(prev);
+				return dataUrl;
+			});
+		};
+		reader.readAsDataURL(blob);
 	}, []);
 
 	// Re-generate print image whenever QR container changes
