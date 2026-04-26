@@ -4,7 +4,7 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import { useQueryStates } from 'nuqs';
 import { qrParsers } from '@/lib/params';
 import type { QRInstance } from '@/lib/qr';
-import { getRawData } from '@/lib/qr';
+import { getCanvasPNGBlob } from '@/lib/qr';
 import { WifiForm } from './wifi-form';
 import { QRCustomizer } from './qr-customizer';
 import { QRPreview } from './qr-preview';
@@ -48,7 +48,7 @@ export function QRGenerator() {
 		const instance = qrRef.current;
 		if (!instance) return;
 
-		const blob = await getRawData(instance, 'png');
+		const blob = await getCanvasPNGBlob(instance);
 		if (!blob) return;
 
 		const reader = new FileReader();

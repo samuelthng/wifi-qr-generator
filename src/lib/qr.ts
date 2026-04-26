@@ -94,3 +94,23 @@ export async function getRawData(instance: QRInstance, format: 'svg' | 'png'): P
 	// Node Buffer case — convert to Uint8Array for Blob constructor
 	return new Blob([new Uint8Array(result)]);
 }
+
+/**
+ * Returns a PNG Blob rendered via a canvas-type instance so that embedded
+ * logo images are included correctly.  Calling getRawData('png') directly on
+ * an SVG-type instance can silently drop the logo because browsers block
+ * cross-origin/blob images when serialising an SVG onto a canvas.
+ */
+export async function getCanvasPNGBlob(instance: QRInstance, size?: number): Promise<Blob | null> {
+	const QRCodeStylingModule = (await import('qr-code-styling')).default;
+	const currentOptions = (instance as unknown as { _options: Options })._options;
+	const width = size ?? currentOptions.width ?? 300;
+	const height = size ?? currentOptions.height ?? 300;
+	const canvasInstance = new QRCodeStylingModule({
+		...currentOptions,
+		width,
+		height,
+		type: 'canvas',
+	});
+	return getRawData(canvasInstance, 'png');
+}
