@@ -5,15 +5,19 @@ import { qrParsers } from '@/lib/params';
 import { downloadQR, type QRInstance } from '@/lib/qr';
 import { PRINT_LAYOUTS } from '@/lib/constants';
 import { useState, useMemo } from 'react';
+import type { ShareUrlResult } from '@/hooks/useCompressedParams';
 
 interface ExportControlsProps {
 	qrRef: React.RefObject<QRInstance | null>;
 	ssid: string;
+	logo: string | null;
+	getShareUrl: (logo: string | null) => Promise<ShareUrlResult>;
 }
 
-export function ExportControls({ qrRef, ssid }: ExportControlsProps) {
+export function ExportControls({ qrRef, ssid, logo, getShareUrl }: ExportControlsProps) {
 	const [copied, setCopied] = useState(false);
 	const [embedCopied, setEmbedCopied] = useState(false);
+	const [logoInShareLink, setLogoInShareLink] = useState<boolean | null>(null);
 	const [params, setParams] = useQueryStates(
 		{
 			printLayout: qrParsers.printLayout,
@@ -53,7 +57,9 @@ export function ExportControls({ qrRef, ssid }: ExportControlsProps) {
 	}
 
 	async function handleCopyUrl() {
-		await navigator.clipboard.writeText(window.location.href);
+		const { url, logoIncluded } = await getShareUrl(logo);
+		await navigator.clipboard.writeText(url);
+		setLogoInShareLink(logo ? logoIncluded : null);
 		setCopied(true);
 		setTimeout(() => setCopied(false), 2000);
 	}
@@ -214,11 +220,18 @@ export function ExportControls({ qrRef, ssid }: ExportControlsProps) {
 				</div>
 			)}
 
-			{/* Password in URL warning */}
+			{/* Sharing notes */}
 			{ssid && (
-				<p className="text-xs text-amber-600 dark:text-amber-400">
-					Shareable and embed URLs contain your WiFi password in plain text.
-				</p>
+				<div className="space-y-1">
+					<p className="text-xs text-zinc-500 dark:text-zinc-400">
+						Shared links are compressed and obfuscated — the password is not visible in plain text.
+					</p>
+					{logo && logoInShareLink === false && (
+						<p className="text-xs text-amber-600 dark:text-amber-400">
+							Logo not included in the share link (image too large). The logo is saved locally in your browser.
+						</p>
+					)}
+				</div>
 			)}
 		</div>
 	);

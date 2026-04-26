@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { QRGenerator } from '@/components/qr-generator';
+import { decodeState } from '@/lib/codec';
 import type { Metadata } from 'next';
 
 type PageProps = {
@@ -9,20 +10,51 @@ type PageProps = {
 
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
 	const params = await searchParams;
-	const ssid = typeof params.ssid === 'string' ? params.ssid : '';
 
-	if (!ssid) return {};
+	let ssid: string;
+	let password: string | undefined;
+	let encryption: string | undefined;
+	let hidden: string | undefined;
+	let ecLevel: string | undefined;
+	let label: string | undefined;
+	let fgColor: string | undefined;
+	let bgColor: string | undefined;
+
+	// Decode compressed ?q= payload when present; fall back to individual params.
+	const q = typeof params.q === 'string' ? params.q : null;
+	if (q) {
+		const state = await decodeState(q);
+		ssid = state.ssid ?? '';
+		if (!ssid) return {};
+		password = state.password;
+		encryption = state.encryption;
+		hidden = state.hidden != null ? String(state.hidden) : undefined;
+		ecLevel = state.ecLevel;
+		label = state.label;
+		fgColor = state.fgColor;
+		bgColor = state.bgColor;
+	} else {
+		ssid = typeof params.ssid === 'string' ? params.ssid : '';
+		if (!ssid) return {};
+		password = typeof params.password === 'string' ? params.password : undefined;
+		encryption = typeof params.encryption === 'string' ? params.encryption : undefined;
+		hidden = typeof params.hidden === 'string' ? params.hidden : undefined;
+		ecLevel = typeof params.ecLevel === 'string' ? params.ecLevel : undefined;
+		label = typeof params.label === 'string' ? params.label : undefined;
+		fgColor = typeof params.fgColor === 'string' ? params.fgColor : undefined;
+		bgColor = typeof params.bgColor === 'string' ? params.bgColor : undefined;
+	}
 
 	// Build the API URL for the OG image
 	const ogParams = new URLSearchParams();
 	ogParams.set('ssid', ssid);
-	if (typeof params.password === 'string') ogParams.set('password', params.password);
-	if (typeof params.encryption === 'string') ogParams.set('encryption', params.encryption);
-	if (typeof params.hidden === 'string') ogParams.set('hidden', params.hidden);
-	if (typeof params.ecLevel === 'string') ogParams.set('ecLevel', params.ecLevel);
-	if (typeof params.label === 'string') ogParams.set('label', params.label);
-	if (typeof params.fgColor === 'string') ogParams.set('fgColor', params.fgColor);
-	if (typeof params.bgColor === 'string') ogParams.set('bgColor', params.bgColor);
+	if (password) ogParams.set('password', password);
+	if (encryption) ogParams.set('encryption', encryption);
+	if (hidden) ogParams.set('hidden', hidden);
+	if (ecLevel) ogParams.set('ecLevel', ecLevel);
+	if (label) ogParams.set('label', label);
+	if (fgColor) ogParams.set('fgColor', fgColor);
+	if (bgColor) ogParams.set('bgColor', bgColor);
 	ogParams.set('size', '600');
 
 	return {

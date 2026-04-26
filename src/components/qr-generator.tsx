@@ -1,10 +1,11 @@
 'use client';
 
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback, startTransition } from 'react';
 import { useQueryStates } from 'nuqs';
 import { qrParsers } from '@/lib/params';
 import type { QRInstance } from '@/lib/qr';
 import { getRawData } from '@/lib/qr';
+import { useCompressedParams } from '@/hooks/useCompressedParams';
 import { WifiForm } from './wifi-form';
 import { QRCustomizer } from './qr-customizer';
 import { QRPreview } from './qr-preview';
@@ -13,11 +14,29 @@ import { ExportControls } from './export-controls';
 import { PrintView } from './print-view';
 import { Collapsible } from './collapsible';
 
+const LOGO_STORAGE_KEY = 'wifi-qr-logo';
+
 export function QRGenerator() {
 	const qrRef = useRef<QRInstance | null>(null);
 	const [logo, setLogo] = useState<string | null>(null);
 	const [mounted, setMounted] = useState(false);
 	const [printDataUrl, setPrintDataUrl] = useState('');
+
+	// Persist logo to localStorage whenever it changes.
+	const handleLogoChange = useCallback((newLogo: string | null) => {
+		setLogo(newLogo);
+		try {
+			if (newLogo) {
+				localStorage.setItem(LOGO_STORAGE_KEY, newLogo);
+			} else {
+				localStorage.removeItem(LOGO_STORAGE_KEY);
+			}
+		} catch {
+			// localStorage may be unavailable in some environments
+		}
+	}, []);
+
+	const { getShareUrl } = useCompressedParams(handleLogoChange);
 
 	const [params] = useQueryStates(
 		{
@@ -38,6 +57,19 @@ export function QRGenerator() {
 	);
 
 	useEffect(() => {
+		// Load logo from localStorage when there is no ?q= in the URL.
+		// If ?q= is present, useCompressedParams handles logo restoration asynchronously.
+		// startTransition defers this non-urgent external-store sync.
+		// eslint-disable-next-line react-hooks/set-state-in-effect
+		if (!new URLSearchParams(window.location.search).has('q')) {
+			try {
+				const stored = localStorage.getItem(LOGO_STORAGE_KEY);
+				if (stored) startTransition(() => setLogo(stored));
+			} catch {
+				// localStorage may be unavailable in some environments
+			}
+		}
+		// eslint-disable-next-line react-hooks/set-state-in-effect
 		setMounted(true);
 	}, []);
 
@@ -100,11 +132,11 @@ export function QRGenerator() {
 						</Collapsible>
 
 						<Collapsible title="QR Style" defaultOpen={false}>
-							<QRCustomizer logo={logo} onLogoChange={setLogo} />
+							<QRCustomizer logo={logo} onLogoChange={handleLogoChange} />
 						</Collapsible>
 
 						<Collapsible title="Save & Share" defaultOpen>
-							<ExportControls qrRef={qrRef} ssid={params.ssid} />
+							<ExportControls qrRef={qrRef} ssid={params.ssid} logo={logo} getShareUrl={getShareUrl} />
 						</Collapsible>
 					</div>
 
