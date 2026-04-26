@@ -221,7 +221,7 @@ export function QRCustomizer({ logo, onLogoChange }: QRCustomizerProps) {
 						<input
 							type="range"
 							min={1}
-							max={20}
+							max={48}
 							step={1}
 							value={params.logoStrokeWidth}
 							onChange={(e) => setParams({ logoStrokeWidth: Number(e.target.value) })}
